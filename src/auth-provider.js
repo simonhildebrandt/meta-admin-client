@@ -1,7 +1,6 @@
 import { createContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import { Subject } from 'rxjs';
-
 import { signInWithCustomToken } from "firebase/auth";
 
 
@@ -73,46 +72,48 @@ export class AuthError extends Error {
   }
 };
 
-export const authProvider = ({firebaseAuth}) => ({
-  // authentication
-  login: async token => {
-    return axios.post("http://localhost:5001/semver-517cc/us-central1/admin/auth", {token})
-      .then(({data}) => {
-        const { customToken } = data;
-        return authWithToken(firebaseAuth, customToken)
-          .then(_ => {
-            return getIdToken(firebaseAuth);
-          })
-          .then(id => {
-            loginState.next({type: "auth", payload: id});
-          })
-      })
-      .catch(error => {
-        console.error(error);
-        return Promise.reject("Invalid token");
-      });
-  },
-  checkError: error => {
-    console.log('checking error', {error})
-    if (error instanceof AuthError) {
-      console.log('is auth error')
-      return Promise.reject();
-    } else {
-      console.log('isn\'t auth error')
+export const authProvider = ({firebaseAuth: auth}) => {
+  return {
+    // authentication
+    login: async token => {
+      return axios.post("http://localhost:5001/semver-517cc/us-central1/admin/auth", {token})
+        .then(({data}) => {
+          const { customToken } = data;
+          return authWithToken(auth, customToken)
+            .then(_ => {
+              return getIdToken(auth);
+            })
+            .then(id => {
+              loginState.next({type: "auth", payload: id});
+            })
+        })
+        .catch(error => {
+          console.error(error);
+          return Promise.reject("Invalid token");
+        });
+    },
+    checkError: error => {
+      console.log('checking error', {error})
+      if (error instanceof AuthError) {
+        console.log('is auth error')
+        return Promise.reject();
+      } else {
+        console.log('isn\'t auth error')
+        return Promise.resolve();
+      }
+    },
+    checkAuth: _ => {
+      // return axios.get("http://localhost:5001/semver-517cc/us-central1/admin/check-auth")
+      // .then(_ => Promise.resolve())
+      // .catch(_ => Promise.reject())
       return Promise.resolve();
-    }
-  },
-  checkAuth: _ => {
-    // return axios.get("http://localhost:5001/semver-517cc/us-central1/admin/check-auth")
-    // .then(_ => Promise.resolve())
-    // .catch(_ => Promise.reject())
-    return Promise.resolve();
-  },
-  logout: () => {
-    return Promise.resolve()
-  },
-  getIdentity: () => Promise.resolve(/* ... */),
-  handleCallback: () => Promise.resolve(/* ... */), // for third-party authentication only
-  // authorization
-  getPermissions: () => Promise.resolve(/* ... */),
-});
+    },
+    logout: () => {
+      return Promise.resolve()
+    },
+    getIdentity: () => Promise.resolve(/* ... */),
+    handleCallback: () => Promise.resolve(/* ... */), // for third-party authentication only
+    // authorization
+    getPermissions: () => Promise.resolve(/* ... */),
+  }
+}
