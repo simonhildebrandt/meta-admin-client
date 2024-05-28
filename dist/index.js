@@ -51,19 +51,26 @@ const store = localStorageStore();
 export default function Admin({
   config,
   firestore,
-  firebaseAuth
+  firebaseAuth,
+  apiURL,
+  basename = "/admin"
 }) {
+  console.log({
+    basename
+  });
   return /*#__PURE__*/React.createElement(ApiContext.Provider, {
-    value: null
+    value: apiURL
   }, /*#__PURE__*/React.createElement(AdminContext, {
     dataProvider: dataProvider({
       firestore
     }),
     authProvider: authProvider({
-      firebaseAuth
+      firebaseAuth,
+      apiURL
     }),
     i18nProvider: defaultI18nProvider,
-    store: store
+    store: store,
+    basename: basename
   }, /*#__PURE__*/React.createElement(AsyncResources, {
     config: config
   })));

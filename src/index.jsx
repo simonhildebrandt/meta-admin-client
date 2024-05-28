@@ -59,14 +59,15 @@ function AsyncResources({config}) {
 
 const store = localStorageStore();
 
-export default function Admin({config, firestore, firebaseAuth}) {
-
-  return <ApiContext.Provider value={null}>
-      <AdminContext
+export default function Admin({config, firestore, firebaseAuth, apiURL, basename="/admin"}) {
+  console.log({basename})
+  return <ApiContext.Provider value={apiURL}>
+    <AdminContext
       dataProvider={dataProvider({firestore})}
-      authProvider={authProvider({firebaseAuth})}
+      authProvider={authProvider({firebaseAuth, apiURL})}
       i18nProvider={defaultI18nProvider}
       store={store}
+      basename={basename}
     >
       <AsyncResources config={config}/>
     </AdminContext>

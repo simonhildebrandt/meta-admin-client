@@ -1,4 +1,4 @@
-import { createContext, useEffect, useState } from 'react';
+import { createContext, useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import { Subject } from 'rxjs';
 import { signInWithCustomToken } from "firebase/auth";
@@ -21,8 +21,15 @@ async function authWithToken(auth, token) {
 }
 
 
+export const ApiContext = createContext(null);
+const loginState = new Subject();
+
+
 export function useLoginState() {
   const [token, setToken] = useState(localStorage.getItem('cached-admin-token'));
+  const apiContext = useContext(ApiContext);
+
+  console.log({apiContext});
 
   useEffect(_ => {
     const sub = loginState.subscribe(({type, payload}) => {
@@ -60,9 +67,6 @@ export function useLoginState() {
 }
 
 
-export const ApiContext = createContext(null);
-
-const loginState = new Subject();
 
 
 export class AuthError extends Error {
@@ -72,7 +76,8 @@ export class AuthError extends Error {
   }
 };
 
-export const authProvider = ({firebaseAuth: auth}) => {
+export const authProvider = ({firebaseAuth: auth, apiContext}) => {
+  console.log('also', {apiContext})
   return {
     // authentication
     login: async token => {
